@@ -1,6 +1,9 @@
 // Outside of document.ready for console access and easy testing/debugging
 var taskList = [];
 
+
+
+
 $('document').ready( function () {
 
     //          #######################
@@ -12,6 +15,13 @@ $('document').ready( function () {
     var favoriteRow = $('.favoriteRow').clone();
     var perDayRow = $('.perDayRow').clone();
     var perMonthRow = $('.perMonthRow').clone();
+
+    // Get a clean copy of <input> elements (+ duration <span>) for insertion in edit button click handler
+    var tagInput = document.getElementsByClassName('tagInput')[0].cloneNode();
+    var durationSpan = document.getElementsByClassName('durationSpan')[0].cloneNode();
+    var startInput = document.getElementsByClassName('startInput')[0].cloneNode();
+    var stopInput = document.getElementsByClassName('stopInput')[0].cloneNode();
+    var descriptionInput = document.getElementsByClassName('descriptionInput')[0].cloneNode();
 
     // Remove all rows from bottom tables until some tags have been created
     $('.favoriteRow').remove();
@@ -84,16 +94,25 @@ $('document').ready( function () {
         updatePerDayTable( taskList );
         updateThisMonthTable( taskList );
 
+
+        // ADDED JUST FOR NATIVE IMPLEMENTATION OF EDIT BUTTON (otherwise Edit button on new row created by Save button has no click listener)
+        // reset Listeners in case of new buttons
+        setupClickListener ( 'btn-edit', handler_clickEditButton )
+
+
+
     });
 
+/*
     // Edit button
     $('body').on('click', '.btn-edit', function (e) {
 
         var $inputParents = $(e.target).parents('.taskRow').children();
 
         // Hide Edit button and reveal Save button
-        $(e.target).parents('.buttonTd').children('.btn-edit').addClass('hidden');
-        $(e.target).parents('.buttonTd').children('.btn-save').removeClass('hidden');
+        //$(e.target).parents('.buttonTd').children('.btn-edit').addClass('hidden');
+
+        //$(e.target).parents('.buttonTd').children('.btn-save').removeClass('hidden');
 
         // Get the index relative to its .taskRow siblings
         var index = $(e.target).parents('.taskRow').index();
@@ -110,9 +129,78 @@ $('document').ready( function () {
         $inputParents.children('.startInput').val( taskList[index].start.toString().slice(4,-18) );
         $inputParents.children('.stopInput').val( taskList[index].stop.toString().slice(4,-18) );
         $inputParents.children('.descriptionInput').val( taskList[index].description );
-        
-
     });
+*/
+
+    // Edit button rewrite in native JS
+
+    // Initial set up of Edit button on-click listener
+    setupClickListener ( 'btn-edit', handler_clickEditButton );
+
+    // 
+    function setupClickListener( className, handler ) {
+
+        var buttons = document.getElementsByClassName( className );
+
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener('click', handler);
+        }
+    }
+
+
+    function handler_clickEditButton(e) { 
+            var targetRow = e.target.parentNode.parentNode;
+            var tdChildren = targetRow.childNodes;
+
+            // Determine index in taskList data model by finding location amongst all rows.
+            var rows = document.getElementsByClassName('taskRow');
+            var rowIndex;
+            for (var i = 0; i < rows.length; i++) {
+                if (targetRow === rows[i]) { rowIndex = i }                
+            }
+
+            // Hide Edit button and reveal Save button           
+            var buttonTd = document.getElementsByClassName('taskRow')[rowIndex].childNodes[ document.getElementsByClassName('taskRow')[rowIndex].childNodes.length - 2 ];
+            buttonTd.childNodes[1].className = 'hidden btn btn-edit';
+            buttonTd.childNodes[3].className = 'btn btn-save';
+            
+
+            for (var i = 0; i < tdChildren.length; i++) {
+                if ( tdChildren[i].tagName && tdChildren[i].tagName.toLowerCase() === 'td' && tdChildren[i].className !== 'buttonTd') {
+                    while (tdChildren[i].firstChild) {
+                        tdChildren[i].removeChild(tdChildren[i].firstChild);
+                    }
+                   
+                    switch (tdChildren[i].className) {
+                        case 'tagTd':
+                            tdChildren[i].appendChild(tagInput.cloneNode());
+                            tdChildren[i].childNodes[0].value = taskList[rowIndex].tags;
+                            break;
+                        case 'durationTd':
+                            tdChildren[i].appendChild(durationSpan.cloneNode());
+                            tdChildren[i].childNodes[0].innerHTML = getDurationMinutes( taskList[rowIndex].start, taskList[rowIndex].stop ) + ' minutes';
+                            break;
+                        case 'startTd':
+                            tdChildren[i].appendChild(startInput.cloneNode());
+                            tdChildren[i].childNodes[0].value = taskList[rowIndex].start.toString().slice(4,-18);
+                            break;
+                        case 'stopTd':
+                            tdChildren[i].appendChild(stopInput.cloneNode());
+                            tdChildren[i].childNodes[0].value = taskList[rowIndex].stop.toString().slice(4,-18);
+                            break;
+                        case 'descriptionTd':
+                            tdChildren[i].appendChild(descriptionInput.cloneNode());
+                            tdChildren[i].childNodes[0].value = taskList[rowIndex].description;
+                            break;
+                    }
+                }
+            }
+
+           // reset Listeners in case of new buttons
+           setupClickListener ( 'btn-edit', handler_clickEditButton )
+
+        };
+
 
     // Delete button
     $('body').on('click', '.btn-delete', function (e) {
