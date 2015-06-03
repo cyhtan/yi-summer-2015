@@ -1,38 +1,39 @@
-var start = [];    // as object, array holds all of the objects
-var end = [];
-var energy = [];
-var breakfast = [];
-var tags = [];
+function addEntries() { //store objects into array
+        var i = 0;
+        var entry = {};
 
-function myFunction() { //store objects into array
-    var workoutResults = [{
-        start: push(document.getElementById("start").value),
-        end: push(document.getElementById("end").value),
-        energy: push(document.getElementById("energy").value),
-        breakfast: push(document.getElementById("breakfast").value),
-        tags: push(document.getElementById("tags").value),
-    }];
-}
+        entry.start = document.getElementById("start").value;
+        entry.end = document.getElementById("end").value;
+        entry.description = document.getElementById("description").value;
+        entry.tags = document.getElementById("tags").value;
 
-function cloneRow() { //clone row function
-    var row = document.getElementById("originalRow"); // find row to copy
-    var table = document.getElementById("myTable"); // find table to append to
-    var clone = row.cloneNode(true); // copy children too
-    clone.id = "cloneRow"; // change id or other attributes/contents
-    table.appendChild(clone); // add new row to end of table
-}
+        entries.push(entry);
 
-function deleteRow(t) { //delete row function
-    var row = t.parentNode.parentNode;
-    document.getElementById("myTable").deleteRow(row.rowIndex);
-}
+        for (i; i < entries.length; i++) {
+            var stringifyArray = entries[i].description + ", " + entries[i].tags + ", " + entries[i].start + ", " + entries[i].ends;
+            var entriesContainer = document.getElementById("entriesContainer");
+            var p = document.createElement('p');
+            var addArray = document.createTextNode(stringifyArray);
+            p.appendChild(addArray);
+            document.getElementById("box").appendChild(p);
 
-//test function
- var number = [];
+        }
+        
+        return i;
 
-function testFunction() {
-        var x = document.getElementById("box");
-        number.push(document.getElementById("input").value);
-        x.innerHTML = number.join('<br/>');
-    }
-//end test function
+
+
+
+
+        function cloneRow() { //clone row function
+            var row = document.getElementById("inputRow"); // find row to copy
+            var table = document.getElementById("myTable"); // find table to append to
+            var clone = row.cloneNode(true); // copy children too
+            clone.id = "cloneRow"; // change id or other attributes/contents
+            table.appendChild(clone); // add new row to end of table
+        }
+
+        function deleteRow(t) { //delete row function
+            var row = t.parentNode.parentNode;
+            document.getElementById("myTable").deleteRow(row.rowIndex);
+        }
