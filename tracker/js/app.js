@@ -1,11 +1,11 @@
-// Outside of document.ready for console access and easy testing/debugging
-var taskList = [];
-
 $('document').ready( function () {
 
     //          #######################
     //----------####  BEGIN SETUP  ####----(Begin Section)---------------------------------------------------
     //          #######################
+
+    // Store all tasks objects here
+    var taskList = [];
 
     // Get a clean copy of the <tr> elements for adding rows later 
     var taskRow = $('.taskRow').clone();
@@ -34,6 +34,18 @@ $('document').ready( function () {
     // Save button
     $('body').on('click', '.btn-save', function (e) {
         
+        // Validate Start/Stop fields
+        if (  ! Date.parse( $(e.target).parents('.taskRow').children('td').children('.startInput').val() )  ) {
+            // Invalid Start date
+            alert('Invalid Start date')
+            return;
+        }
+        if (  ! Date.parse( $(e.target).parents('.taskRow').children('td').children('.stopInput').val() )  ) {
+            // Invalid Stop date
+            alert('Invalid Stop date')
+            return;
+        }
+
         // These will be stored in the array taskList
         var savedObject = {};
 
@@ -53,10 +65,6 @@ $('document').ready( function () {
 
         // Insert a non-referenced clone of savedObject into taskList array
         taskList[ index ] = _.clone( savedObject );
-
-        // Simple logs for viewing and making sure data is saving properly
-        console.log("Just saved: ", savedObject);
-        console.log("taskList now contains: ", taskList);
 
         // If saving the last row, add a new empty row
         if ( $(e.target).parents('.taskRow').is(':last-child') ) {
@@ -241,8 +249,6 @@ $('document').ready( function () {
             $('#perMonthTable').children('tbody').append( perMonthRow.clone() );
             $('.perMonthRow:last').children('td').html('<span>' + summedMonthDuration + ' minutes' +'</span>');
         }
-
-
     }
         
     //          #######################
