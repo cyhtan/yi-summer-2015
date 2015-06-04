@@ -1,8 +1,8 @@
 $('document').ready( function () {
 
     // Used by delete 
-    // QUESTION: better to declare this at top of scope? or right above the delete function that uses it
-    var deleteInProgress = false;
+    // QUESTION: better to declare this at top of scope? or right above the function that uses it
+    var animationInProgress = false;
 
     //          #######################
     //----------####  BEGIN SETUP  ####----(Begin Section)---------------------------------------------------
@@ -37,6 +37,9 @@ $('document').ready( function () {
 
     // Save button
     $('body').on('click', '.btn-save', function (e) {
+
+        // If any animation is still in progress, do nothing
+        if (animationInProgress) { return; }
         
         // Get the index relative to its .taskRow siblings
         var index = $(e.target).parents('.taskRow').index();
@@ -105,6 +108,9 @@ $('document').ready( function () {
     // Edit button
     $('body').on('click', '.btn-edit', function (e) {
 
+        // If any animation is still in progress, do nothing
+        if (animationInProgress) { return; }
+
         var $inputParents = $(e.target).parents('.taskRow').children();
 
         // Hide Edit button and reveal Save button
@@ -133,28 +139,29 @@ $('document').ready( function () {
     // Delete button
     $('body').on('click', '.btn-delete', function (e) {
 
-        // If a delete is still in progress, do nothing
-        if (deleteInProgress) { return; };
+        // If any animation is still in progress, do nothing
+        if (animationInProgress) { return; }
 
         // Prevent a delete event from occuring until delete is complete (which would cause index problems and decouple view/model)
         // QUESTION: This is the first of problems that I vaguely expected by not coupling the
         //           view <tr> element to the data in taskList []. Should I have found some way 
         //           to include a unique identifier, connecting the HTML to the data? 
-        deleteInProgress = true;
-
-        // Get the index relative to its .taskRow siblings
-        var index = $(e.target).parents('.taskRow').index();
-
-        // Remove data
-        taskList.splice(index, 1);
+        animationInProgress = true;
 
         // Fade out row
-        $(e.target).parents('.taskRow').fadeOut(1000, 'linear', function () { 
+        $(e.target).parents('.taskRow').fadeOut(700, 'linear', function () { 
+
+            // Get the index relative to its .taskRow siblings
+            var index = $(e.target).parents('.taskRow').index();
+
+            // Remove data
+            taskList.splice(index, 1);
+
             // Delete
             $(e.target).parents('.taskRow').remove(); 
 
             // Delete is complete, allow the next delete event
-            deleteInProgress = false;
+            animationInProgress = false;
         } );
 
         // Get new tag durations and update tally tables
