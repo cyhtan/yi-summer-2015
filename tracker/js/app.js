@@ -1,5 +1,9 @@
 $('document').ready( function () {
 
+    // Used by delete 
+    // QUESTION: better to declare this at top of scope? or right above the delete function that uses it
+    var deleteInProgress = false;
+
     //          #######################
     //----------####  BEGIN SETUP  ####----(Begin Section)---------------------------------------------------
     //          #######################
@@ -34,15 +38,22 @@ $('document').ready( function () {
     // Save button
     $('body').on('click', '.btn-save', function (e) {
         
+        // Get the index relative to its .taskRow siblings
+        var index = $(e.target).parents('.taskRow').index();
+
         // Validate Start/Stop fields
-        if (  ! Date.parse( $(e.target).parents('.taskRow').children('td').children('.startInput').val() )  ) {
-            // Invalid Start date
-            alert('Invalid Start date')
-            return;
+        function isValidInput (inputClass, invalidMessage) {
+            if (  ! Date.parse( $(e.target).parents('.taskRow').children('td').children(inputClass).val() )  ) {
+                alert(invalidMessage); // Invalid 
+                return false;
+                // TODO: Reset input value to last valid input
+            }
+            return true; // Validbb
         }
-        if (  ! Date.parse( $(e.target).parents('.taskRow').children('td').children('.stopInput').val() )  ) {
-            // Invalid Stop date
-            alert('Invalid Stop date')
+
+        // If input is invalid, return handler function immediately, without saving.
+        if ( ! isValidInput('.startInput', 'Invalid Start date') ||
+             ! isValidInput('.startInput', 'Invalid Stop date')     ) {
             return;
         }
 
@@ -59,9 +70,6 @@ $('document').ready( function () {
         savedObject.day =   savedObject.start.getDate();
         savedObject.month = savedObject.start.getMonth() + 1;
         savedObject.duration = getDurationMinutes(savedObject.start, savedObject.stop);
-
-        // Get the index relative to its .taskRow siblings
-        var index = $(e.target).parents('.taskRow').index();
 
         // Insert a non-referenced clone of savedObject into taskList array
         taskList[ index ] = _.clone( savedObject );
@@ -125,20 +133,36 @@ $('document').ready( function () {
     // Delete button
     $('body').on('click', '.btn-delete', function (e) {
 
+        // If a delete is still in progress, do nothing
+        if (deleteInProgress) { return; };
+
+        // Prevent a delete event from occuring until delete is complete (which would cause index problems and decouple view/model)
+        // QUESTION: This is the first of problems that I vaguely expected by not coupling the
+        //           view <tr> element to the data in taskList []. Should I have found some way 
+        //           to include a unique identifier, connecting the HTML to the data? 
+        deleteInProgress = true;
+
         // Get the index relative to its .taskRow siblings
         var index = $(e.target).parents('.taskRow').index();
 
-        // Remove row
-        $(e.target).parents('.taskRow').remove();
-
         // Remove data
         taskList.splice(index, 1);
+
+        // Fade out row
+        $(e.target).parents('.taskRow').fadeOut(1000, 'linear', function () { 
+            // Delete
+            $(e.target).parents('.taskRow').remove(); 
+
+            // Delete is complete, allow the next delete event
+            deleteInProgress = false;
+        } );
 
         // Get new tag durations and update tally tables
         var currentDurations = getTagDurations();
         updateFavoriteActivitiesTable( currentDurations );
         updatePerDayTable( taskList );
         updateThisMonthTable( taskList );
+
 
     });
 
