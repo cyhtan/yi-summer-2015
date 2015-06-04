@@ -1,9 +1,10 @@
+
 $('document').ready( function () {
 
     // Used by delete 
     // QUESTION: better to declare this at top of scope? or right above the function that uses it
     var animationInProgress = false;
-
+    var animationSpeed = 700;
     //          #######################
     //----------####  BEGIN SETUP  ####----(Begin Section)---------------------------------------------------
     //          #######################
@@ -148,21 +149,19 @@ $('document').ready( function () {
         //           to include a unique identifier, connecting the HTML to the data? 
         animationInProgress = true;
 
+        // Get the index relative to its .taskRow siblings
+        var index = $(e.target).parents('.taskRow').index();
+
+        // Remove data
+        taskList.splice(index, 1);
+
         // Fade out row
-        $(e.target).parents('.taskRow').fadeOut(700, 'linear', function () { 
-
-            // Get the index relative to its .taskRow siblings
-            var index = $(e.target).parents('.taskRow').index();
-
-            // Remove data
-            taskList.splice(index, 1);
-
-            // Delete
+        $(e.target).parents('.taskRow').fadeOut(animationSpeed, 'linear', function () { 
+            // Delete in view
             $(e.target).parents('.taskRow').remove(); 
-
             // Delete is complete, allow the next delete event
             animationInProgress = false;
-        } );
+        });
 
         // Get new tag durations and update tally tables
         var currentDurations = getTagDurations();
@@ -200,8 +199,8 @@ $('document').ready( function () {
 
         // Convert to an array of {name: tagName, duration: 30} objects, for easier sorting
         var returnArray = [];
-        for (prop in durations) {
-            returnArray.push( { 'name': prop, 'duration': durations[prop] } )
+        for (var prop in durations) {
+            returnArray.push( { 'name': prop, 'duration': durations[prop] } );
         }
 
         // Sort by duration, low to high
@@ -217,15 +216,19 @@ $('document').ready( function () {
 
     // Update the Favorite Activities table
     function updateFavoriteActivitiesTable (tagDurations) {
-        $('#favoriteActivitiesTable').children('tbody').children('.favoriteRow').remove();
-
-        for (var i = tagDurations.length - 1; i >= 0; i--) {
-            $('#favoriteActivitiesTable').children('tbody').append( favoriteRow.clone() );
-            $('.favoriteRow:last').children('td').remove()
-            $('.favoriteRow:last').append('<td><span>' + tagDurations[i].name + '</span></td>');
-            $('.favoriteRow:last').append('<td><span>' + tagDurations[i].duration + ' minutes' + '</span></td>');
-
-        }
+        $('#favoriteActivitiesTable').children('tbody').children('.favoriteRow').fadeOut( animationSpeed / 2, 'linear', function () {
+            this.remove();
+        });
+        // QUESTION: Why can't this work in the callback function above!?!? Great confusion.
+        setTimeout( function () {
+            for (var i = tagDurations.length - 1; i >= 0; i--) {
+                $('#favoriteActivitiesTable').children('tbody').append( favoriteRow.clone() );
+                $('.favoriteRow:last').css('display', 'none');
+                $('.favoriteRow:last').children('td:eq(0)').html('<span>' + tagDurations[i].name + '</span>');
+                $('.favoriteRow:last').children('td:eq(1)').html('<span>' + tagDurations[i].duration + '</span>');
+                $('.favoriteRow:last').fadeIn( animationSpeed / 2,'linear');
+            }
+        }, (animationSpeed / 2) + 1 );
     }
 
     //                  - # - # - # - # - #
@@ -253,7 +256,7 @@ $('document').ready( function () {
         // Update the Total Time Per Day table
         for (var i = 0; i < summed.length; i++){
             $('#perDayTable').children('tbody').append( perDayRow.clone() );
-            $('.perDayRow:last').children('td').remove()
+            $('.perDayRow:last').children('td').remove();
             $('.perDayRow:last').append('<td><span>' + summed[i].month + '/' + summed[i].date + '</span></td>');
             $('.perDayRow:last').append('<td><span>' + summed[i].summedDuration + ' minutes' + '</span></td>'); 
         }
@@ -267,8 +270,8 @@ $('document').ready( function () {
 
         // Filter only tasks in current month, and reduce to get summed duration
         var summedMonthDuration = _(taskList).chain()
-                                     .filter( function (obj) {return obj.month === currentMonth} )
-                                     .reduce( function(memo, val) {return memo + val.duration} , 0 )
+                                     .filter( function (obj) {return obj.month === currentMonth;} )
+                                     .reduce( function(memo, val) {return memo + val.duration;} , 0 )
                                      .value();
 
         // Remove old row
