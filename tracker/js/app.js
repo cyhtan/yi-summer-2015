@@ -216,19 +216,24 @@ $('document').ready( function () {
 
     // Update the Favorite Activities table
     function updateFavoriteActivitiesTable (tagDurations) {
+        // Fade out current contents and then remove
         $('#favoriteActivitiesTable').children('tbody').children('.favoriteRow').fadeOut( animationSpeed / 2, 'linear', function () {
             this.remove();
         });
         // QUESTION: Why can't this work in the callback function above!?!? Great confusion.
         setTimeout( function () {
             for (var i = tagDurations.length - 1; i >= 0; i--) {
+                // Insert a row clone
                 $('#favoriteActivitiesTable').children('tbody').append( favoriteRow.clone() );
+                // Set display to none for upcoming fadeIn
                 $('.favoriteRow:last').css('display', 'none');
+                // Insert values
                 $('.favoriteRow:last').children('td:eq(0)').html('<span>' + tagDurations[i].name + '</span>');
                 $('.favoriteRow:last').children('td:eq(1)').html('<span>' + tagDurations[i].duration + '</span>');
+                // Fade in
                 $('.favoriteRow:last').fadeIn( animationSpeed / 2,'linear');
             }
-        }, (animationSpeed / 2) + 1 );
+        }, animationSpeed / 2 );
     }
 
     //                  - # - # - # - # - #
@@ -237,7 +242,10 @@ $('document').ready( function () {
 
     // Get data for and update the "Total Time Per Day" table
     function updatePerDayTable (taskList) {
-        $('#perDayTable').children('tbody').children('.perDayRow').remove();
+        // Fade out current contents and then remove
+        $('#perDayTable').children('tbody').children('.perDayRow').fadeOut( animationSpeed / 2, 'linear', function () {
+            this.remove();
+        });
 
         // Group by day of month
         var groupedByDay = _(taskList).groupBy('day');
@@ -254,12 +262,20 @@ $('document').ready( function () {
         }
 
         // Update the Total Time Per Day table
-        for (var i = 0; i < summed.length; i++){
-            $('#perDayTable').children('tbody').append( perDayRow.clone() );
-            $('.perDayRow:last').children('td').remove();
-            $('.perDayRow:last').append('<td><span>' + summed[i].month + '/' + summed[i].date + '</span></td>');
-            $('.perDayRow:last').append('<td><span>' + summed[i].summedDuration + ' minutes' + '</span></td>'); 
-        }
+        setTimeout( function () {
+            for (var i = 0; i < summed.length; i++) {
+                 // Insert a row clone
+                $('#perDayTable').children('tbody').append( perDayRow.clone() );
+                // Set display to none for upcoming fadeIn
+                $('.perDayRow:last').css('display', 'none');
+                // Insert values
+                $('.perDayRow:last').children('td:eq(0)').html('<span>' + summed[i].month + '/' + summed[i].date + '</span>');
+                $('.perDayRow:last').children('td:eq(1)').html('<span>' + summed[i].summedDuration + ' minutes' + '</span>');
+                // Fade in
+                $('.perDayRow:last').fadeIn( animationSpeed / 2,'linear');
+            }
+        }, animationSpeed / 2 );
+
     }
 
     // Get data for and update the "Total Time This Month" table
