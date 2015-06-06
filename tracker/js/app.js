@@ -150,7 +150,15 @@ $('document').ready( function () {
     //                  - # - # - # - # - #
 
     // Replace spans with inputs containing the saved values
-    function editField (field, index) {
+    function editField (field, e) {
+        // Get the index relative to its .taskRow siblings
+        var index = $(e.target).parents('.taskRow').index();
+        var $inputParents = $(e.target).parents('.taskRow').children();
+
+        // Hide Edit button and reveal Save button
+        $(e.target).parents('.taskRow').children('.buttonTd').children('.btn-edit').addClass('hidden');
+        $(e.target).parents('.taskRow').children('.buttonTd').children('.btn-save').removeClass('hidden');
+
         if (field === 'duration') {
             $inputParents.children( fields[field].spanClass ).html( getDurationMinutes(taskList[index].start, taskList[index].stop ) + ' minutes' );
         } else {
@@ -168,20 +176,32 @@ $('document').ready( function () {
         // If any animation is still in progress, do nothing
         if (animationInProgress) { return; }
 
-        var $inputParents = $(e.target).parents('.taskRow').children();
-
-        // Hide Edit button and reveal Save button
-        $(e.target).parents('.buttonTd').children('.btn-edit').addClass('hidden');
-        $(e.target).parents('.buttonTd').children('.btn-save').removeClass('hidden');
-
-        // Get the index relative to its .taskRow siblings
-        var index = $(e.target).parents('.taskRow').index();
-
         // Run editField on all fields
         for (var field in fields) {
-            editField(field, index); 
+            editField(field, e); 
         }
+    });
 
+    // Edit on clicking field
+    $('#trackerTable').on('click', 'td', function (e) {
+        
+        console.log(e.target);
+
+        // If any animation is still in progress, do nothing
+        if (animationInProgress) { return; }
+
+        // If user clicked non-editable duration field, or buttons <td>, do nothing
+        if ( e.target.className === 'durationTd' || $(e.target).parents('.durationTd')[0]  ) { return; }
+        if ( e.target.className === 'buttonTd' || $(e.target).parents('.buttonTd')[0]  ) { return; }
+
+        // If target is an <input>, or has an <input> as a child, do nothing
+        if ( e.target.tagName === 'INPUT' || e.target.tagName === 'TD' &&  $( e.target ).children('input')[0] ) { return; }
+        
+        // Remove 'Td' from the end to get the proper field name
+        var field = e.target.tagName === 'SPAN' ? $( e.target ).parents('td')[0].className.slice(0,-2) : e.target.className.slice(0,-2);
+
+        // Execute edit functionality
+        editField (field, e);
     });
 
     //                  - # - # - # - # - #
