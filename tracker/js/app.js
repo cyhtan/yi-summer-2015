@@ -1,3 +1,4 @@
+// TODO: Refactor fadeOut/remove and fadeIn/append into functions
 
 $('document').ready( function () {
 
@@ -5,12 +6,43 @@ $('document').ready( function () {
     // QUESTION: better to declare this at top of scope? or right above the function that uses it
     var animationInProgress = false;
     var animationSpeed = 700;
-    //          #######################
-    //----------####  BEGIN SETUP  ####----(Begin Section)---------------------------------------------------
-    //          #######################
 
     // Store all tasks objects here
     var taskList = [];
+
+    // For use in Save/Edit handlers, replacing input with span and vice versa
+    var fields = {
+        tags: {
+            $input: $('.tagInput').clone(),
+            inputClass: '.tagInput',
+            spanClass: '.tagSpan'
+        },
+        duration: {
+            // no input here
+            // or input class
+            spanClass: '.durationSpan'
+        },
+        start : {
+            $input: $('.startInput').clone(),
+            inputClass: '.startInput',
+            spanClass: '.startSpan'
+        },
+        stop : {
+            $input: $('.stopInput').clone(),
+            inputClass: '.stopInput',
+            spanClass: '.stopSpan'
+        },
+        description : {
+            $input: $('.descriptionInput').clone(),
+            inputClass: '.descriptionInput',
+            spanClass: '.descriptionSpan'
+        }
+    };
+
+
+    //          #######################
+    //----------####  BEGIN SETUP  ####----(Begin Section)---------------------------------------------------
+    //          #######################
 
     // Get a clean copy of the <tr> elements for adding rows later 
     var taskRow = $('.taskRow').clone();
@@ -35,6 +67,10 @@ $('document').ready( function () {
     //          #######################
     //----------#### BEGIN BUTTONS ####----(Begin Section)---------------------------------------------------
     //          #######################
+
+    //                  - # - # - # - # - #
+    //                  #   BEGIN SAVE    -     (Begin Subsection)
+    //                  - # - # - # - # - #
 
     // Save button
     $('body').on('click', '.btn-save', function (e) {
@@ -103,8 +139,28 @@ $('document').ready( function () {
         updateFavoriteActivitiesTable( currentDurations );
         updatePerDayTable( taskList );
         updateThisMonthTable( taskList );
-
     });
+
+    //                  - # - # - # - # - #
+    //                  #    END SAVE     -     (End Subsection)
+    //                  - # - # - # - # - #
+
+    //                  - # - # - # - # - #
+    //                  #   BEGIN EDIT    -     (Begin Subsection)
+    //                  - # - # - # - # - #
+
+    // Replace spans with inputs containing the saved values
+    function editField (field, index) {
+        if (field === 'duration') {
+            $inputParents.children( fields[field].spanClass ).html( getDurationMinutes(taskList[index].start, taskList[index].stop ) + ' minutes' );
+        } else {
+            $inputParents.children( fields[field].spanClass ).after( fields[field].$input.clone() ).remove();
+            $inputParents.children( fields[field].inputClass ).val( 
+                // For Start and Stop fields, slice() before display
+                field === 'start' || field === 'stop' ? taskList[index][field].toString().slice(4,-18) : taskList[index][field] 
+                );
+        }
+    }
 
     // Edit button
     $('body').on('click', '.btn-edit', function (e) {
@@ -121,21 +177,21 @@ $('document').ready( function () {
         // Get the index relative to its .taskRow siblings
         var index = $(e.target).parents('.taskRow').index();
 
-        // Replace <span> elements with <input> fields
-        $inputParents.children('.tagSpan').after('<input class="tagInput" type="text" name="tags">').remove();
-        $inputParents.children('.startSpan').after('<input class="startInput wid-110" type="text" name="start">').remove();
-        $inputParents.children('.stopSpan').after('<input class="stopInput wid-110" type="text" name="stop">').remove();
-        $inputParents.children('.descriptionSpan').after('<input class="descriptionInput wid-180" type="text" name="description">').remove();
-
-        // use the index to pull the matching record from taskList data model, and enter into <input> fields
-        $inputParents.children('.tagInput').val( taskList[index].tags );
-        $inputParents.children('.durationSpan').html( getDurationMinutes(taskList[index].start, taskList[index].stop ) + ' minutes' );
-        $inputParents.children('.startInput').val( taskList[index].start.toString().slice(4,-18) );
-        $inputParents.children('.stopInput').val( taskList[index].stop.toString().slice(4,-18) );
-        $inputParents.children('.descriptionInput').val( taskList[index].description );
-        
+        // Run editField on all fields
+        for (var field in fields) {
+            editField(field, index); 
+        }
 
     });
+
+    //                  - # - # - # - # - #
+    //                  #    END EDIT     -     (End Subsection)
+    //                  - # - # - # - # - #
+
+    //                  - # - # - # - # - #
+    //                  #  BEGIN DELETE   -     (Begin Subsection)
+    //                  - # - # - # - # - #
+
 
     // Delete button
     $('body').on('click', '.btn-delete', function (e) {
@@ -169,8 +225,11 @@ $('document').ready( function () {
         updatePerDayTable( taskList );
         updateThisMonthTable( taskList );
 
-
     });
+
+    //                  - # - # - # - # - #
+    //                  #   END DELETE    -     (End Subsection)
+    //                  - # - # - # - # - #
 
     //          #######################
     //----------####  END BUTTONS  ####----(End Section)-----------------------------------------------------
@@ -290,15 +349,25 @@ $('document').ready( function () {
                                      .reduce( function(memo, val) {return memo + val.duration;} , 0 )
                                      .value();
 
-        // Remove old row
-        $('#perMonthTable').children('tbody').children('.perMonthRow').remove();
+        // Fade out and remove old rows
+        $('#perMonthTable').children('tbody').children('.perMonthRow').fadeOut( animationSpeed / 2, 'linear', function () {
+            this.remove();
+        });
 
-        // Don't display anything if 0 duration
-        if ( summedMonthDuration !== 0 ) {
-            // Add new row with updated Total Time This Month
-            $('#perMonthTable').children('tbody').append( perMonthRow.clone() );
-            $('.perMonthRow:last').children('td').html('<span>' + summedMonthDuration + ' minutes' +'</span>');
-        }
+        setTimeout( function () {
+            // Don't display anything if 0 duration
+            if ( summedMonthDuration !== 0 ) {
+
+                // Add new row with updated Total Time This Month
+                $('#perMonthTable').children('tbody').append( perMonthRow.clone() );
+                // Set display to none for upcoming fadeIn
+                $('.perMonthRow:last').css('display', 'none');
+                // Insert values
+                $('.perMonthRow:last').children('td').html('<span>' + summedMonthDuration + ' minutes' +'</span>');
+                // Fade in
+                $('.perMonthRow:last').fadeIn( animationSpeed / 2,'linear');
+            }
+        }, animationSpeed / 2 );
     }
         
     //          #######################
