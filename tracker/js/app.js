@@ -45,10 +45,10 @@ $('document').ready( function () {
     //          #######################
 
     // Get a clean copy of the <tr> elements for adding rows later 
-    var taskRow = $('.taskRow').clone();
-    var favoriteRow = $('.favoriteRow').clone();
-    var perDayRow = $('.perDayRow').clone();
-    var perMonthRow = $('.perMonthRow').clone();
+    var $taskRow = $('.taskRow').clone();
+    var $favoriteRow = $('.favoriteRow').clone();
+    var $perDayRow = $('.perDayRow').clone();
+    var $perMonthRow = $('.perMonthRow').clone();
 
     // Remove all rows from bottom tables until some tags have been created
     $('.favoriteRow').remove();
@@ -81,53 +81,75 @@ $('document').ready( function () {
         // Get the index relative to its .taskRow siblings
         var index = $(e.target).parents('.taskRow').index();
 
+        // Set newValues to current values if they exist, otherwise create an empty object
+        var newValues = {};
+
+        if ( ! taskList[index] ) { taskList[index] = {}; }
+
+        // Determine which <td>'s contain <input>'s, and store any input in newValues
+        $( e.target ).parents('.taskRow').children('td').each( function( index ) {
+            
+            // If the <td> contained an <input>, save that data to newValues; else, do nothing
+            if ( $(this).children(':eq(0)')[0].tagName.toLowerCase() === 'input' ) {
+                
+                var input = $(this).children(':eq(0)').val();
+                
+                // Remove 'Td' from class name for a clean property name
+                var key = this.className.slice(0,-2); 
+                
+                newValues[ key ] = input;       
+            }
+        });
+
+        // Validate and format newValues for insertion in taskList
+        for (var key in newValues) {
+            // Validate
+            if ( key === 'start' && ! isValidDate( newValues[key], 'Invalid start date.' )) { return; } // Exit save function if invalid date
+            if ( key === 'stop'  && ! isValidDate( newValues[key], 'Invalid stop date.' ))  { return; } // Exit save function if invalid date
+
+            // Format
+            if ( key === 'start' || key === 'stop') { 
+                newValues[key] = new Date( newValues[key] ); 
+            } else if ( key === 'tags') {
+                newValues[key] = _.uniq( newValues[key].replace(' ', '').split(',') ); // Remove white space, and repeated tags
+            }
+
+            // Insert into taskList
+            taskList[index][key] = newValues[key];
+
+        }
+
         // Validate Start/Stop fields
-        function isValidInput (inputClass, invalidMessage) {
-            if (  ! Date.parse( $(e.target).parents('.taskRow').children('td').children(inputClass).val() )  ) {
+        function isValidDate (inputDate, invalidMessage) {
+            if (  ! Date.parse( inputDate )  ) {
                 alert(invalidMessage); // Invalid 
                 return false;
                 // TODO: Reset input value to last valid input
             }
-            return true; // Validbb
+            return true; // Valid
         }
 
-        // If input is invalid, return handler function immediately, without saving.
-        if ( ! isValidInput('.startInput', 'Invalid Start date') ||
-             ! isValidInput('.startInput', 'Invalid Stop date')     ) {
-            return;
-        }
-
-        // These will be stored in the array taskList
-        var savedObject = {};
-
-        var $inputParents = $(e.target).parents('.taskRow').children();
-
-        // Get input values, and store Start/Stop as Dates, Description as string, and Tags as array of strings
-        savedObject.tags =    _.uniq( $inputParents.children('.tagInput').val().replace(' ', '').split(',') ); // Remove white space, and repeated tags
-        savedObject.start = new Date( $inputParents.children('.startInput').val() );
-        savedObject.stop =  new Date( $inputParents.children('.stopInput').val() );
-        savedObject.description =     $inputParents.children('.descriptionInput').val();
-        savedObject.day =   savedObject.start.getDate();
-        savedObject.month = savedObject.start.getMonth() + 1;
-        savedObject.duration = getDurationMinutes(savedObject.start, savedObject.stop);
-
-        // Insert a non-referenced clone of savedObject into taskList array
-        taskList[ index ] = _.clone( savedObject );
+        // Set calculated properties
+        taskList[index].day =                          taskList[index].start.getDate();
+        taskList[index].month =                        taskList[index].start.getMonth() + 1;
+        taskList[index].duration = getDurationMinutes( taskList[index].start, taskList[index].stop );
 
         // If saving the last row, add a new empty row
         if ( $(e.target).parents('.taskRow').is(':last-child') ) {
-            $(e.target).parents('tbody').append( taskRow.clone() );
+            $(e.target).parents('tbody').append( $taskRow.clone() );
             // Set default Start/Stop times to now
             $('.startInput').val( new Date().toString().slice(4,-18) );
             $('.stopInput').val( new Date().toString().slice(4,-18) );
         }
 
+        var $inputParents = $(e.target).parents('.taskRow').children();
+
         // Replace <input> fields with <span> elements containing the user's input values
-        $inputParents.children('.tagInput').after('<span class="tagSpan">' + savedObject.tags.join(', ') + '</span>').remove();
-        $inputParents.children('.durationSpan').html( getDurationMinutes( savedObject.start, savedObject.stop ) + ' minutes');
-        $inputParents.children('.startInput').after('<span class="startSpan">' + savedObject.start.toString().slice(4,-18) + '</span>').remove();
-        $inputParents.children('.stopInput').after('<span class="stopSpan">' + savedObject.stop.toString().slice(4,-18) + '</span>').remove();
-        $inputParents.children('.descriptionInput').after('<span class="descriptionSpan">' + savedObject.description + '</span>').remove();
+        $inputParents.children('.tagInput').after('<span class="tagSpan">' + taskList[index].tags.join(', ') + '</span>').remove();
+        $inputParents.children('.durationSpan').html( taskList[index].duration + ' minutes');
+        $inputParents.children('.startInput').after('<span class="startSpan">' + taskList[index].start.toString().slice(4,-18) + '</span>').remove();
+        $inputParents.children('.stopInput').after('<span class="stopSpan">' + taskList[index].stop.toString().slice(4,-18) + '</span>').remove();
+        $inputParents.children('.descriptionInput').after('<span class="descriptionSpan">' + taskList[index].description + '</span>').remove();
 
         // Hide Save button, and reveal Edit, Delete
         $(e.target).parents('.buttonTd').children('.btn-save').addClass('hidden');
@@ -303,7 +325,7 @@ $('document').ready( function () {
         setTimeout( function () {
             for (var i = tagDurations.length - 1; i >= 0; i--) {
                 // Insert a row clone
-                $('#favoriteActivitiesTable').children('tbody').append( favoriteRow.clone() );
+                $('#favoriteActivitiesTable').children('tbody').append( $favoriteRow.clone() );
                 // Set display to none for upcoming fadeIn
                 $('.favoriteRow:last').css('display', 'none');
                 // Insert values
@@ -344,7 +366,7 @@ $('document').ready( function () {
         setTimeout( function () {
             for (var i = 0; i < summed.length; i++) {
                  // Insert a row clone
-                $('#perDayTable').children('tbody').append( perDayRow.clone() );
+                $('#perDayTable').children('tbody').append( $perDayRow.clone() );
                 // Set display to none for upcoming fadeIn
                 $('.perDayRow:last').css('display', 'none');
                 // Insert values
@@ -379,7 +401,7 @@ $('document').ready( function () {
             if ( summedMonthDuration !== 0 ) {
 
                 // Add new row with updated Total Time This Month
-                $('#perMonthTable').children('tbody').append( perMonthRow.clone() );
+                $('#perMonthTable').children('tbody').append( $perMonthRow.clone() );
                 // Set display to none for upcoming fadeIn
                 $('.perMonthRow:last').css('display', 'none');
                 // Insert values
