@@ -10,6 +10,9 @@ $('document').ready( function () {
     // Store all tasks objects here
     var taskList = [];
 
+    // Set up localStorage variable, and equalize for browsers that support only globalStorage
+    var storage = getLocalStorage();
+
     // For use in Save/Edit handlers, replacing input with span and vice versa
     var fields = {
         tags: {
@@ -101,6 +104,16 @@ $('document').ready( function () {
             }
         });
 
+        // Validate Start/Stop fields
+        function isValidDate (inputDate, invalidMessage) {
+            if (  ! Date.parse( inputDate )  ) {
+                alert(invalidMessage); // Invalid 
+                return false;
+                // TODO: Reset input value to last valid input
+            }
+            return true; // Valid
+        }
+
         // Validate and format newValues for insertion in taskList
         for (var key in newValues) {
             // Validate
@@ -119,20 +132,14 @@ $('document').ready( function () {
 
         }
 
-        // Validate Start/Stop fields
-        function isValidDate (inputDate, invalidMessage) {
-            if (  ! Date.parse( inputDate )  ) {
-                alert(invalidMessage); // Invalid 
-                return false;
-                // TODO: Reset input value to last valid input
-            }
-            return true; // Valid
-        }
-
         // Set calculated properties
         taskList[index].day =                          taskList[index].start.getDate();
         taskList[index].month =                        taskList[index].start.getMonth() + 1;
         taskList[index].duration = getDurationMinutes( taskList[index].start, taskList[index].stop );
+
+        // Save taskList to localStorage
+        storage.setItem('taskList', JSON.stringify(taskList) );
+
 
         // If saving the last row, add a new empty row
         if ( $(e.target).parents('.taskRow').is(':last-child') ) {
@@ -415,6 +422,26 @@ $('document').ready( function () {
     //          #######################
     //----------## END FOOTER TABLES ##----(End Section)-----------------------------------------------------
     //          #######################
+
+    //          #######################
+    //----------## BEGIN WEB STORAGE ##----(Begin Section)---------------------------------------------------
+    //          #######################
+    //
+
+
+// Equalizing for browsers that only support globalStorage (Zakas, p.785)
+function getLocalStorage() {
+    if (typeof localStorage == 'object'){
+        return localStorage;
+    } else if (typeof globalStorage == 'object') {
+        return globalStorage[location.host];
+    } else {
+        throw new Error('Local storage not available.');
+    }
+}
+
+
+
 
 
 });
