@@ -12,6 +12,7 @@ $('document').ready( function () {
 
     // Set up localStorage variable, and equalize for browsers that support only globalStorage
     var storage = getLocalStorage();
+    var username; 
 
     // For use in Save/Edit handlers, replacing input with span and vice versa
     var fields = {
@@ -137,9 +138,12 @@ $('document').ready( function () {
         taskList[index].month =                        taskList[index].start.getMonth() + 1;
         taskList[index].duration = getDurationMinutes( taskList[index].start, taskList[index].stop );
 
-        // Save taskList to localStorage
-        storage.setItem('taskList', JSON.stringify(taskList) );
-
+        // Save taskList to user's space on localStorage if username exists, otherwise 'anon'
+        if (username) {
+            updateUserInfo ( username , { 'taskList' : taskList }  );
+        } else {
+            updateUserInfo ( 'anon' , { 'taskList' : taskList }  );
+        }
 
         // If saving the last row, add a new empty row
         if ( $(e.target).parents('.taskRow').is(':last-child') ) {
@@ -213,8 +217,6 @@ $('document').ready( function () {
 
     // Edit on clicking field
     $('#trackerTable').on('click', 'td', function (e) {
-        
-        console.log(e.target);
 
         // If any animation is still in progress, do nothing
         if (animationInProgress) { return; }
@@ -429,22 +431,74 @@ $('document').ready( function () {
     //
 
 
-// Equalizing for browsers that only support globalStorage (Zakas, p.785)
-function getLocalStorage() {
-    if (typeof localStorage == 'object'){
-        return localStorage;
-    } else if (typeof globalStorage == 'object') {
-        return globalStorage[location.host];
-    } else {
-        throw new Error('Local storage not available.');
+    // Equalizing for browsers that only support globalStorage (Zakas, p.785)
+    function getLocalStorage() {
+        if (typeof localStorage == 'object'){
+            return localStorage;
+        } else if (typeof globalStorage == 'object') {
+            return globalStorage[location.host];
+        } else {
+            throw new Error('Local storage not available.');
+        }
     }
-}
+
+    // Takes an existing username 'user' and an object 'update', and adds/overwrites the key:value pairs in
+    // that username with those provided in 'update'
+    function updateUserInfo (username, update) {
+        // Parse and stringify must be used when setting/getting localStorage
+        // If username does not have any existing data on localStorage, initialize as {}
+        var currentInfo = JSON.parse(  storage.getItem(username)  ) || {};
+
+        for (var prop in update) {
+            currentInfo[prop] = update[prop];
+        }
+
+        storage.setItem( username, JSON.stringify( currentInfo ) );
+    }
 
 
 
+    // Create new user
+    // QUESTION: the local var 'username' here, should I name it as I have? Ditto for the other local 
+    //           version which is a parameter of isInvalidUsername? Does this get confusing when there
+    //           is another version of 'username' declared higher up in the scope chain? or is this standard practice?
+    $('body').on('click', '#btn-new', function (e) {
+
+        var username,
+            password;
+
+        createNewUser();
+
+        function createNewUser () {
+            username = prompt('Please enter an username:');
+
+            if ( isInvalidUsername(username) ) {
+                username = undefined;
+                createNewUser();
+            } else {
+                password = prompt('Please enter a password');
+                updateUserInfo( username, {'password': password} );
+                alert('Success!\n Username: ' + username + '\n Password: ' + password + '\n Please sign in with your new credentials!' );
+            }
+        }
+
+         // QUESTION: Are these names best kept to isPositive format (e.g. isValid)? Then negated if (! isValid)?
+         //           the code: if (isInvalid) reads nicer to me than: if ( ! isValid). But I see merit in keeping
+         //           all code in 'is' phrases to be positive/truthy... advice? conventions?
+        function isInvalidUsername ( username ) {
+            if ( username in storage ) {
+                alert ('That username is already in use.');
+                return true;
+            } else if (username === '') {
+                alert ('Invalid username.');
+                return true;
+            } else {
+                return false;
+            }
+        }
+    });
+
+    
 
 
 });
-
-
-
