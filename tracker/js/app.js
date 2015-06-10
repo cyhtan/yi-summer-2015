@@ -12,7 +12,7 @@ $('document').ready( function () {
 
     // Set up localStorage variable, and equalize for browsers that support only globalStorage
     var storage = getLocalStorage();
-    var username; 
+    var currentUser;
 
     // For use in Save/Edit handlers, replacing input with span and vice versa
     var fields = {
@@ -139,8 +139,8 @@ $('document').ready( function () {
         taskList[index].duration = getDurationMinutes( taskList[index].start, taskList[index].stop );
 
         // Save taskList to user's space on localStorage if username exists, otherwise 'anon'
-        if (username) {
-            updateUserInfo ( username , { 'taskList' : taskList }  );
+        if (currentUser) {
+            updateUserInfo ( currentUser , { 'taskList' : taskList }  );
         } else {
             updateUserInfo ( 'anon' , { 'taskList' : taskList }  );
         }
@@ -474,7 +474,6 @@ $('document').ready( function () {
 
             if ( isInvalidUsername(username) ) {
                 username = undefined;
-                createNewUser();
             } else {
                 password = prompt('Please enter a password');
                 updateUserInfo( username, {'password': password} );
@@ -487,9 +486,9 @@ $('document').ready( function () {
          //           all code in 'is' phrases to be positive/truthy... advice? conventions?
         function isInvalidUsername ( username ) {
             if ( username in storage ) {
-                alert ('That username is already in use.');
+                alert ('That username is already in use. Please try again.');
                 return true;
-            } else if (username === '') {
+            } else if (username === '' || username === null ) {
                 alert ('Invalid username.');
                 return true;
             } else {
@@ -498,7 +497,24 @@ $('document').ready( function () {
         }
     });
 
-    
+    $('body').on('click', '#btn-sign', function (e) {
+        var username = prompt('Please enter your username:');
+        var password;
+        if ( ! storage[username] ) {
+            alert('That username does not exist!');
+            return;
+        }
+            
+        password = prompt('Please enter your password:');
+
+        if ( JSON.parse( storage[username] ).password === password ) {
+            alert('Success! You are now signed in.');
+            // TODO: run sign in setup, load existing taskList data, etc.
+        } else {
+            alert('Incorrect password.');
+        }
+
+    });
 
 
 });
