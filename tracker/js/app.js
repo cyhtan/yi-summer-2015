@@ -156,6 +156,7 @@ $('document').ready( function () {
         var $inputParents = $(e.target).parents('.taskRow').children();
 
         // Replace <input> fields with <span> elements containing the user's input values
+        // TODO: Refactor this (DRY) to a function inputToSpan with one parameter that matches the properties in the 'field' object
         $inputParents.children('.tagInput').after('<span class="tagSpan">' + taskList[index].tags.join(', ') + '</span>').remove();
         $inputParents.children('.durationSpan').html( taskList[index].duration + ' minutes');
         $inputParents.children('.startInput').after('<span class="startSpan">' + taskList[index].start.toString().slice(4,-18) + '</span>').remove();
@@ -168,6 +169,7 @@ $('document').ready( function () {
         $(e.target).parents('.buttonTd').children('.btn-delete').removeClass('hidden');
 
         // Get new tag durations and update tally tables
+        // TODO: Refactor this chunk into one function, updateFooterTables
         var currentDurations = getTagDurations();
         updateFavoriteActivitiesTable( currentDurations );
         updatePerDayTable( taskList );
@@ -271,6 +273,7 @@ $('document').ready( function () {
         });
 
         // Get new tag durations and update tally tables
+        // TODO: Refactor this chunk into one function, updateFooterTables
         var currentDurations = getTagDurations();
         updateFavoriteActivitiesTable( currentDurations );
         updatePerDayTable( taskList );
@@ -476,7 +479,7 @@ $('document').ready( function () {
                 username = undefined;
             } else {
                 password = prompt('Please enter a password');
-                updateUserInfo( username, {'password': password} );
+                updateUserInfo( username, {'password': password, 'taskList': [] } );
                 alert('Success!\n Username: ' + username + '\n Password: ' + password + '\n Please sign in with your new credentials!' );
             }
         }
@@ -497,6 +500,7 @@ $('document').ready( function () {
         }
     });
 
+    // Sign in
     $('body').on('click', '#btn-sign', function (e) {
         var username = prompt('Please enter your username:');
         var password;
@@ -508,10 +512,54 @@ $('document').ready( function () {
         password = prompt('Please enter your password:');
 
         if ( JSON.parse( storage[username] ).password === password ) {
+            currentUser = username;
             alert('Success! You are now signed in.');
-            // TODO: run sign in setup, load existing taskList data, etc.
+            loadLocalStorage( username );
         } else {
             alert('Incorrect password.');
+        }
+
+        function loadLocalStorage (username) {
+            // Get taskList data from localStorage
+            taskList = JSON.parse( storage[username] ).taskList;
+
+            // Re-Date-ify these objects after stringify 
+            for (var i = 0; i < taskList.length; i++) {
+                taskList[i].start = new Date(taskList[i].start);
+                taskList[i].stop = new Date(taskList[i].stop);
+            }
+
+            // Remove all rows
+            $('#trackerTable tbody .taskRow').remove();
+
+            // If there is at least 1 task in taskList, update the table
+            if ( taskList.length ) { 
+
+                for (i = 0; i < taskList.length; i++) {
+                    $('#trackerTable tbody').append( $taskRow.clone() );
+
+                    // TODO: Refactor this (DRY) to a function inputToSpan with one parameter that matches the properties in the 'field' object
+                    $('#trackerTable tbody .taskRow:last td').children('.tagInput').after('<span class="tagSpan">' + taskList[i].tags.join(', ') + '</span>').remove();
+                    $('#trackerTable tbody .taskRow:last td').children('.durationSpan').html( taskList[i].duration + ' minutes');
+                    $('#trackerTable tbody .taskRow:last td').children('.startInput').after('<span class="startSpan">' + taskList[i].start.toString().slice(4,-18) + '</span>').remove();
+                    $('#trackerTable tbody .taskRow:last td').children('.stopInput').after('<span class="stopSpan">' + taskList[i].stop.toString().slice(4,-18) + '</span>').remove();
+                    $('#trackerTable tbody .taskRow:last td').children('.descriptionInput').after('<span class="descriptionSpan">' + taskList[i].description + '</span>').remove();
+                 }
+            // Else if there are no tasks in taskList, present a starting row
+            } else {
+                $('#trackerTable tbody').append( $taskRow.clone() );
+                // Set default Start/Stop times to now
+                $('.startInput').val( new Date().toString().slice(4,-18) );
+                $('.stopInput').val( new Date().toString().slice(4,-18) );
+            }
+
+            // Get new tag durations and update tally tables
+            // TODO: Refactor this chunk into one function, updateFooterTables
+            var currentDurations = getTagDurations();
+            updateFavoriteActivitiesTable( currentDurations );
+            updatePerDayTable( taskList );
+            updateThisMonthTable( taskList );
+
         }
 
     });
