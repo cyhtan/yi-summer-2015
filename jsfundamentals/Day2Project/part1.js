@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //Part One: Data
 //Step 1A
 
@@ -126,3 +127,8 @@ relationships.matches.push(animals[2].species);
 for (var i = 0; i < animals.length; i++) {
     animals[i]
 }
+=======
+//Use this file to implement Part One of your project
+
+var animal;
+>>>>>>> a7c0a93e998818a17b4805155e41afe03731a123

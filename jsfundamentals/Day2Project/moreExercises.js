@@ -82,4 +82,8 @@ var data = { results: [
   // Next, add it to an array called 'FishMatches'. 
   // Make each match an object with two properties 'name' and 'index'
   // Your end result should look like this:
+<<<<<<< HEAD
   var fishMatches = [{name: 'dog', index: 2}, {name: 'whale', index:5}];
+=======
+  var fishMatches = [{name: 'dog', index: 2}, {name: 'whale', index:5}];
+>>>>>>> a7c0a93e998818a17b4805155e41afe03731a123

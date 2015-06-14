@@ -64,9 +64,15 @@ This object will be the model of what our animal data will look like.
 ##### Step 1A - Object
 We are going to create an object to hold our data using all the different ways of adding properties and values to an object.
 
+<<<<<<< HEAD
 - [x] Create a variable and name it animal, assign it an empty object
 
 - [x] Using dot notation, add a property called 'species' and assign it a value
+=======
+- Create a variable and name it animal, assign it an empty object
+
+- Using dot notation, add a property called 'species' and assign it a value
+>>>>>>> a7c0a93e998818a17b4805155e41afe03731a123
 - Using dot notation, ensure that your species property exists on animal
 - Using bracket notation, add a property called tagline and give it a value
 - Using brakcet notation, check and make sure that your property exists on the animal object
@@ -217,4 +223,8 @@ What if you wanted to change the data on the whole collection? For example, spec
 
 - Change all the species properties be called name instead.
 - What if we wanted to reset all the friendslists on all the animals? Implement it!
+<<<<<<< HEAD
 - What else might you want to change? Implement it!
+=======
+- What else might you want to change? Implement it!
+>>>>>>> a7c0a93e998818a17b4805155e41afe03731a123
