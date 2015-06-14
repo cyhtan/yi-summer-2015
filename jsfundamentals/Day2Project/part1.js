@@ -29,7 +29,7 @@ console.log(noiseArray);
 
 console.log(noiseArray.length);
 
-console.log(noiseArray.length-1);
+console.log(noiseArray.length - 1);
 
 console.log(noiseArray);
 
@@ -77,30 +77,52 @@ remove quotes ex: animal[&thepark!] = true;
 var animals = [];
 animals.push(animal);
 
-var quackers = { 
-		species: 'duck', 
-		tagline: 'Afflack', 
-		noises: ['quack', 'honk', 'sneeze', 'growl'] 
-	};
+var quackers = {
+    species: 'duck',
+    tagline: 'Afflack',
+    noises: ['quack', 'honk', 'sneeze', 'growl']
+};
 
 animals[1] = quackers; //"Add quackers to the animal array using a different method than before."
-         //Vague wording of the question-this is refferring to the 'animals'(plural) array.
+//Vague wording of the question-this is refferring to the 'animals'(plural) array.
 
 console.log(animals);
 
 var longNose = {
-		species:'elephant',
-		tagline:'remover of obstacles',
-		noises:['trumpet', 'sneeze','sniff', 'slurp']
+    species: 'elephant',
+    tagline: 'remover of obstacles',
+    noises: ['trumpet', 'sneeze', 'sniff', 'slurp']
 };
 
 var gobble = {
-		species:'turkey',
-		tagline:'isPopular during Thanksgiving',
-		noises:['gobble', 'hiss', 'squawk', 'rumble']
+    species: 'turkey',
+    tagline: 'isPopular during Thanksgiving',
+    noises: ['gobble', 'hiss', 'squawk', 'rumble']
 };
 
 animals.push(longNose, gobble);
 console.log(animals);
 console.log(animals.length);
 
+//Step 3: Create relationships between animals
+//3a: Create a Friendslist
+
+var friends = []; //an array of objects 
+//allows to access list of friends by index and store detailed key value pairs in objects.
+
+friends.push(animals[0].species);
+friends.push(animals[1].species);
+
+console.log(friends);
+
+//3b: Create a Relationships object
+var relationships = {};
+relationships.friends = friends; //length is undefined - objects do not have length
+var matches = [];
+relationships.matches = matches;
+
+relationships.matches.push(animals[2].species);
+
+for (var i = 0; i < animals.length; i++) {
+    animals[i]
+}
