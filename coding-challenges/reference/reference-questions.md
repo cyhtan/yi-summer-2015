@@ -2,6 +2,12 @@
 
 Jun 16:
 - How does inheritance work in Javascript?
+
+Answer: JavaScript objects are dynamic "bags" of properties (referred to as own properties). JavaScript objects have a link to a prototype object. When trying to access a property of an object, the property will not only be sought on the object but on the prototype of the object, the prototype of the prototype, and so on until either a property with a matching name is found or the end of the prototype chain is reached.
+
+Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain
+
+
 - What kind of scope do variables have?
 
 Answer: The two main types of scope are global and local. Global variables
