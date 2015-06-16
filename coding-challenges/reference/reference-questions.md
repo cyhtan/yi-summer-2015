@@ -4,6 +4,22 @@ Jun 16:
 - How does inheritance work in Javascript?
 - What kind of scope do variables have?
 - What is a closure?
+
+Answer:
+
+[1]  
+Closures are functions that refer to independent (free) variables. In other words, the function defined in the closure 'remembers' the environment in which it was created.
+
+[2]  
+A closure is an inner function that has access to the outer (enclosing) function’s variables—scope chain. The closure has three scope chains: it has access to its own scope (variables defined between its curly brackets), it has access to the outer  function’s variables, and it has access to the global variables.
+
+The inner function has access not only to the outer function’s variables, but also to the outer function’s parameters. Note that the inner function cannot call the outer function’s arguments object, however, even though it can call the outer function’s parameters directly.
+
+Source:
+[1] https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
+[2] http://javascriptissexy.com/understand-javascript-closures-with-ease/
+
+
 - What is function hoisting?
 
 Jun 17:
