@@ -44,22 +44,31 @@
 //------------------------------------
 
 //'exercise 1'
-var celebration = 'Hooray!';
-var scold = 'WRONGGGGGOOOO! an integer that is > 0!';
-var input = -1;
+// var celebration = 'Hooray!';
+// var scold = 'WRONGGGGGOOOO! an integer that is > 0!';
+// var input = -1;
 
-for (;input < 0;) {
-  input = prompt('Enter an integer that is > 0!');
-  alert(scold);
-}
-alert(celebration);
+// for (;input < 0;) {
+//   input = prompt('Enter an integer that is > 0!');
+//   alert(scold);
+// }
+// alert(celebration);
 
 //------------------------------------
 //'exercise 2'
-// var answer = prompt('Do you like tofu?');
+var answer = prompt('Do you like tofu?');
 
-// (answer === 'yes') ? alert('cool!') : prompt(tofu)
+(answer === 'yes') ? alert('cool!') : prompt(tofu)
 
-// for (var i = 0; i < length; i++) {
+for (var i = 0; i < length; i++) {
 
-// }
+}
+
+
+
+
+
+
+
+
+
